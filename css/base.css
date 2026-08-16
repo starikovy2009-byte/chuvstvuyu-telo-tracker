@@ -1,0 +1,100 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+html { min-width: 320px; scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--ink);
+  background: #e8e5e1;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { touch-action: manipulation; }
+img { display: block; max-width: 100%; }
+h1, h2, h3, p, figure { margin-top: 0; }
+h1, h2, h3 { text-wrap: balance; }
+
+:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+
+[hidden] { display: none !important; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  z-index: 1000;
+  padding: 10px 14px;
+  background: var(--ink);
+  color: var(--white);
+  transform: translateY(-150%);
+}
+.skip-link:focus { transform: none; }
+
+.site-shell {
+  width: min(100%, calc(var(--content-max) + 32px));
+  min-height: 100vh;
+  margin-inline: auto;
+  padding: 16px;
+}
+
+.app-frame,
+.welcome-screen,
+.access-screen {
+  overflow: hidden;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.view-host { min-width: 0; }
+
+.eyebrow,
+.brand-kicker {
+  margin-bottom: 12px;
+  color: var(--red);
+  font-size: .78rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.brand-kicker span { font-family: var(--font-serif); font-size: 1.25em; }
+.brand-kicker { color: var(--ink); }
+.brand-accent { color: var(--red); }
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ink);
+}
+.section-heading h2,
+.section-heading h3 { margin: 0; font-family: var(--font-serif); font-weight: 400; }
+.section-heading span { color: var(--muted); font-size: .82rem; }
+
+.muted { color: var(--muted); }
+.accent { color: var(--red); }
+
+@media (max-width: 700px) {
+  html, body { min-width: 0; }
+  .site-shell { padding: 0; }
+  .app-frame, .welcome-screen, .access-screen { border-inline: 0; box-shadow: none; }
+}

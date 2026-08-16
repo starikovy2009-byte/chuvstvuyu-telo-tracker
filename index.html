@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f2ee">
+  <meta name="description" content="Закрытый трекер клуба «ЧувствуЮ тело»">
+  <title>ЧУВСТВУЮ ТЕЛО — трекер клуба</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/motion.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">К основному содержимому</a>
+
+  <div id="app" class="site-shell">
+    <main id="main-content" tabindex="-1">
+      <section id="loading-screen" class="state-screen" aria-live="polite">
+        <div class="state-card">
+          <p class="eyebrow">ЧувствуЮ тело</p>
+          <h1>Проверяем вход…</h1>
+          <p>Это займёт несколько секунд.</p>
+        </div>
+      </section>
+
+      <section id="welcome-screen" class="welcome-screen" aria-labelledby="welcome-title">
+        <div class="welcome-copy">
+          <p class="brand-kicker">КЛУБ «Чувству<span class="brand-accent">Ю</span> тело»</p>
+          <h1 id="welcome-title"><span>Небольшие действия.</span><span>Живое ощущение себя.</span></h1>
+          <p>Трекер движения для закрытого клуба: четыре практики, один день и бережный взгляд на свой ритм.</p>
+          <div class="welcome-actions">
+            <button class="button button-primary" type="button" data-action="open-login">Войти в клуб</button>
+            <button class="button button-link" type="button" data-action="open-register">Создать аккаунт</button>
+          </div>
+        </div>
+        <figure class="welcome-photo">
+          <img src="assets/source/welcome-coach-updated.jpg" alt="Улыбающийся тренер клуба в малиновой спортивной форме">
+          <figcaption>Движение видно. Прогресс чувствуется.</figcaption>
+        </figure>
+      </section>
+
+      <section id="auth-screen" class="access-screen" hidden aria-labelledby="auth-title">
+        <div class="access-head">
+          <button class="icon-button" type="button" data-action="back-welcome" aria-label="Вернуться на приветственный экран">←</button>
+          <div>
+            <p class="eyebrow">Безопасный вход</p>
+            <h1 id="auth-title">Личный кабинет</h1>
+          </div>
+        </div>
+        <div class="auth-layout">
+          <section class="auth-intro">
+            <p class="eyebrow">Один вход для всех</p>
+            <h2>Сайт сам определит вашу роль</h2>
+            <p>Участник попадёт только в свой кабинет, а тренер — в защищённый режим управления клубом.</p>
+          </section>
+
+          <form id="login-form" class="editorial-card auth-form" novalidate>
+            <div class="section-heading">
+              <h2>Войти</h2>
+              <span>email и пароль</span>
+            </div>
+            <label for="login-email">Email</label>
+            <input id="login-email" name="email" type="email" autocomplete="email" required>
+            <label for="login-password">Пароль</label>
+            <input id="login-password" name="password" type="password" minlength="10" autocomplete="current-password" required>
+            <p id="login-message" class="form-message" role="alert"></p>
+            <button class="button button-primary" type="submit">Войти</button>
+            <button class="button button-link" type="button" data-action="open-forgot">Забыли пароль?</button>
+            <p class="auth-switch">Нет аккаунта? <button type="button" data-action="open-register">Зарегистрироваться</button></p>
+          </form>
+
+          <form id="registration-form" class="editorial-card auth-form" hidden novalidate>
+            <div class="section-heading">
+              <h2>Регистрация</h2>
+              <span>для участника</span>
+            </div>
+            <label for="registration-name">Имя</label>
+            <input id="registration-name" name="displayName" type="text" minlength="2" maxlength="24" autocomplete="given-name" aria-describedby="registration-error" required>
+            <label for="registration-email">Email</label>
+            <input id="registration-email" name="email" type="email" autocomplete="email" required>
+            <label for="registration-password">Пароль</label>
+            <input id="registration-password" name="password" type="password" minlength="10" autocomplete="new-password" aria-describedby="registration-password-hint" required>
+            <small id="registration-password-hint" class="field-hint">Не меньше 10 символов.</small>
+            <p id="registration-error" class="form-message" role="alert"></p>
+            <button class="button button-primary" type="submit">Создать аккаунт</button>
+            <p class="auth-switch">Уже зарегистрированы? <button type="button" data-action="open-login">Войти</button></p>
+          </form>
+
+          <form id="forgot-form" class="editorial-card auth-form" hidden novalidate>
+            <div class="section-heading">
+              <h2>Восстановить пароль</h2>
+              <span>письмо на email</span>
+            </div>
+            <p class="muted">Введите email, указанный при регистрации. Мы отправим ссылку для создания нового пароля.</p>
+            <label for="forgot-email">Email</label>
+            <input id="forgot-email" name="email" type="email" autocomplete="email" required>
+            <p id="forgot-message" class="form-message" role="alert"></p>
+            <button class="button button-primary" type="submit">Отправить ссылку</button>
+            <button class="button button-link" type="button" data-action="open-login">Вернуться ко входу</button>
+          </form>
+
+          <form id="reset-form" class="editorial-card auth-form" hidden novalidate>
+            <div class="section-heading">
+              <h2>Новый пароль</h2>
+              <span>не меньше 10 символов</span>
+            </div>
+            <label for="reset-password">Новый пароль</label>
+            <input id="reset-password" name="password" type="password" minlength="10" autocomplete="new-password" required>
+            <label for="reset-password-confirm">Повторите пароль</label>
+            <input id="reset-password-confirm" name="passwordConfirm" type="password" minlength="10" autocomplete="new-password" required>
+            <p id="reset-message" class="form-message" role="alert"></p>
+            <button class="button button-primary" type="submit">Сохранить новый пароль</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="account-status-screen" class="state-screen" hidden aria-labelledby="account-status-title">
+        <div class="state-card">
+          <p id="account-status-kicker" class="eyebrow">Статус аккаунта</p>
+          <h1 id="account-status-title"></h1>
+          <p id="account-status-message"></p>
+          <div class="state-actions">
+            <button class="button button-secondary" type="button" data-action="retry-account">Проверить ещё раз</button>
+            <button class="button button-link" type="button" data-action="sign-out">Выйти из аккаунта</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="member-app" class="app-frame" hidden aria-label="Личный кабинет участника">
+        <header class="app-header">
+          <button class="brand-button" type="button" data-tab="overview">ЧУВСТВУ<span class="brand-accent">Ю</span> ТЕЛО — трекер клуба</button>
+          <button id="member-header-profile" class="header-profile" type="button" data-tab="profile"></button>
+        </header>
+        <div id="member-view" class="view-host"></div>
+        <nav class="bottom-nav" aria-label="Разделы клуба">
+          <button type="button" data-tab="overview"><span aria-hidden="true">⌂</span><span>Обзор</span></button>
+          <button type="button" data-tab="month"><span aria-hidden="true">▦</span><span>Месяц</span></button>
+          <button type="button" data-tab="rating"><span aria-hidden="true">≋</span><span>Рейтинг</span></button>
+          <button type="button" data-tab="profile"><span aria-hidden="true">○</span><span>Профиль</span></button>
+        </nav>
+      </section>
+
+      <section id="coach-app" class="app-frame coach-frame" hidden aria-label="Режим тренера">
+        <header class="app-header">
+          <button class="brand-button" type="button" data-coach-tab="active">ЧУВСТВУ<span class="brand-accent">Ю</span> ТЕЛО — режим тренера</button>
+          <span id="coach-account-label" class="demo-role"></span>
+        </header>
+        <div class="coach-layout">
+          <nav class="coach-nav" aria-label="Разделы тренера">
+            <button type="button" data-coach-tab="active">Участники</button>
+            <button type="button" data-coach-tab="removed">Удалённые</button>
+            <button type="button" data-coach-tab="data">Данные</button>
+            <button type="button" data-action="sign-out">Выйти из аккаунта</button>
+          </nav>
+          <div id="coach-view" class="view-host"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+    <form method="dialog">
+      <p class="eyebrow">Подтверждение</p>
+      <h2 id="confirm-title">Подтвердите действие</h2>
+      <p id="confirm-message"></p>
+      <div class="dialog-actions">
+        <button class="button button-secondary" value="cancel">Отмена</button>
+        <button id="confirm-action" class="button button-danger" value="confirm">Подтвердить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

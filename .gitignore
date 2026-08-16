@@ -1,0 +1,25 @@
+# Локальные резервные копии и проверочные материалы
+/backups/
+/screenshots/
+/designs/
+/tests/
+
+# Статические макеты, не используемые опубликованным приложением
+/month.html
+/overview.html
+/profile.html
+/rating.html
+/ИНСТРУКЦИЯ_САЙТ_ЧУВСТВУЮ_ТЕЛО.md
+
+# Настройки редактора и системные файлы
+/.vscode/
+.DS_Store
+Thumbs.db
+*.log
+
+# Локальные переменные окружения и ключи
+.env
+.env.*
+!.env.example
+*.pem
+*.key

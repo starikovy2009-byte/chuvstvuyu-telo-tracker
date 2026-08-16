@@ -1,0 +1,23 @@
+:root {
+  color-scheme: light;
+  --paper: #f4f2ee;
+  --surface: #fcfbf9;
+  --ink: #171717;
+  --muted: #827d78;
+  --line: #c8c2bd;
+  --line-soft: #ddd8d2;
+  --red: #bd3046;
+  --red-strong: #922f36;
+  --rose: #eadde4;
+  --rose-soft: #f1e4e6;
+  --mint: #dce8e5;
+  --mint-strong: #4a6964;
+  --sand: #e8e0cf;
+  --gold: #b49e72;
+  --white: #fff;
+  --font-sans: Inter, Manrope, "Segoe UI", Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --content-max: 1180px;
+  --nav-height: 68px;
+  --shadow-soft: 0 18px 60px rgb(23 23 23 / 8%);
+}

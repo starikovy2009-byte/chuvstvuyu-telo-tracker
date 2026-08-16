@@ -1,0 +1,31 @@
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes perfect-glow {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgb(189 48 70 / 0%); }
+  50% { box-shadow: inset 0 0 0 5px rgb(189 48 70 / 18%); }
+}
+
+.page-view { animation: page-in .28s ease both; }
+.toast { animation: toast-in .2s ease both; }
+.perfect-day { animation: perfect-glow .8s ease both; }
+
+.button, .icon-button, .activity-card, .calendar-day, .member-row, .bottom-nav button {
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .12s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
