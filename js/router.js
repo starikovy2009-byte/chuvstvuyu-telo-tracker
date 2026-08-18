@@ -10,6 +10,8 @@ export const uiState = {
   profileEditing: false,
   registrationAvatarData: null,
   coachSearch: "",
+  coachStatsDate: todayMoscow(),
+  coachStatsMonth: todayMoscow().slice(0, 7),
   selectedCoachProfileId: null,
   historyOpen: false,
   perfectPlayed: new Set()
@@ -20,7 +22,7 @@ export function goToMemberTab(tab) {
 }
 
 export function goToCoachTab(tab) {
-  if (["active", "removed", "data"].includes(tab)) uiState.coachTab = tab;
+  if (["active", "statistics", "removed", "data"].includes(tab)) uiState.coachTab = tab;
 }
 
 export function selectTrackerDate(dateString) {

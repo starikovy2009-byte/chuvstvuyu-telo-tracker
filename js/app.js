@@ -29,9 +29,10 @@ import {
   ensureAuthenticatedProfile,
   getState,
   initializeStore,
+  normalizeName,
   subscribe,
   updateProfile,
-  validateName
+  validateParticipantFullName
 } from "./store.js";
 import { renderOverview } from "./tracker.js";
 import { clampDate, compareDates, todayMoscow } from "./dates.js";
@@ -114,6 +115,13 @@ const clubDataState = {
 };
 
 let latestState = initializeStore();
+let lastPageViewKey = "";
+
+function mountPageView(container, view, key) {
+  view.classList.toggle("page-view-enter", key !== lastPageViewKey);
+  container.replaceChildren(view);
+  lastPageViewKey = key;
+}
 
 function hideScreens() {
   refs.loading.hidden = true;
@@ -420,7 +428,7 @@ async function refreshCoachRoster() {
   } catch (error) {
     if (requestId !== coachRequestsState.rosterRequestId || !hasActiveCoachAccount()) return;
     coachRequestsState.rosterPhase = "error";
-    coachRequestsState.rosterError = error.message || "Не удалось загрузить состав клуба из Supabase.";
+    coachRequestsState.rosterError = error.message || "Не удалось загрузить состав клуба.";
   }
   if (hasActiveCoachAccount()) render();
 }
@@ -503,6 +511,16 @@ function coachActions() {
         field?.setSelectionRange(field.value.length, field.value.length);
       });
     },
+    setStatsDate(value) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || compareDates(value, todayMoscow()) > 0) return;
+      uiState.coachStatsDate = value;
+      render();
+    },
+    setStatsMonth(value) {
+      if (!/^\d{4}-\d{2}$/.test(value) || value > todayMoscow().slice(0, 7)) return;
+      uiState.coachStatsMonth = value;
+      render();
+    },
     selectMember(profileId) {
       uiState.selectedCoachProfileId = uiState.selectedCoachProfileId === profileId ? null : profileId;
       uiState.historyOpen = false;
@@ -578,22 +596,24 @@ function renderMember(state) {
   } else if (uiState.memberTab === "rating") view = renderRating({ state: sharedState, profile, actions, sync: sharedSync });
   else if (uiState.memberTab === "profile") view = renderProfile({ state: personalState, profile, ui: uiState, actions });
   else view = renderOverview({ state: personalState, clubState: sharedState, clubSync: sharedSync, profile, ui: uiState, actions, sync: memberEntriesView(uiState.selectedDate.slice(0, 7)) });
-  refs.memberView.replaceChildren(view);
+  mountPageView(refs.memberView, view, `participant:${profile.id}:${uiState.memberTab}`);
 }
 
 function renderCoachApp() {
   refs.coachApp.hidden = false;
-  refs.coachAccountLabel.textContent = `${authState.account.profile.display_name} · защищённый вход`;
+  refs.coachAccountLabel.textContent = `${authState.account.profile.display_name} · тренер`;
   refs.coachApp.querySelectorAll("[data-coach-tab]").forEach((button) => {
     if (button.dataset.coachTab === uiState.coachTab) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   });
-  refs.coachView.replaceChildren(renderCoach({ state: coachClubDataState.state, ui: uiState, actions: coachActions(), requests: coachRequestsState }));
+  const view = renderCoach({ state: coachClubDataState.state, ui: uiState, actions: coachActions(), requests: coachRequestsState });
+  mountPageView(refs.coachView, view, `coach:${authState.account.user.id}:${uiState.coachTab}`);
 }
 
 function render() {
   latestState = getState();
   hideScreens();
+  if (!["participant", "coach"].includes(authState.phase)) lastPageViewKey = "";
   if (authState.phase === "loading") refs.loading.hidden = false;
   else if (authState.phase === "participant") renderMember(latestState);
   else if (authState.phase === "coach") renderCoachApp();
@@ -638,6 +658,8 @@ async function refreshAccount(session, { retryPending = false } = {}) {
       resetMemberEntries();
       resetClubData();
       uiState.coachTab = "active";
+      uiState.coachStatsDate = todayMoscow();
+      uiState.coachStatsMonth = todayMoscow().slice(0, 7);
       authState.phase = "coach";
     } else if (status === "active" && role === "participant") {
       resetMemberEntries();
@@ -682,6 +704,20 @@ async function handleSignOut() {
 }
 
 document.addEventListener("click", async (event) => {
+  const passwordToggle = event.target.closest("[data-password-toggle]");
+  if (passwordToggle) {
+    event.preventDefault();
+    const passwordField = document.getElementById(passwordToggle.dataset.passwordToggle);
+    if (passwordField) {
+      const reveal = passwordField.type === "password";
+      passwordField.type = reveal ? "text" : "password";
+      passwordToggle.setAttribute("aria-pressed", String(reveal));
+      passwordToggle.setAttribute("aria-label", reveal ? "Скрыть пароль" : "Показать пароль");
+      passwordField.focus({ preventScroll: true });
+      passwordField.setSelectionRange(passwordField.value.length, passwordField.value.length);
+    }
+  }
+
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "open-login") showAuthView("login");
   else if (action === "open-register") showAuthView("register");
@@ -718,6 +754,7 @@ document.addEventListener("click", async (event) => {
     uiState.selectedCoachProfileId = null;
     uiState.historyOpen = false;
     render();
+    if (uiState.coachTab === "statistics") refreshCoachRoster();
   }
 });
 
@@ -737,7 +774,7 @@ refs.loginForm.addEventListener("submit", async (event) => {
 refs.registrationForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   setMessage(refs.registrationError, "");
-  const nameError = validateName(refs.registrationName.value);
+  const nameError = validateParticipantFullName(refs.registrationName.value);
   if (nameError) {
     setMessage(refs.registrationError, nameError);
     refs.registrationName.focus();
@@ -746,7 +783,7 @@ refs.registrationForm.addEventListener("submit", async (event) => {
   if (!refs.registrationForm.reportValidity()) return;
   setFormBusy(refs.registrationForm, true);
   try {
-    const data = await signUp(refs.registrationName.value, refs.registrationEmail.value, refs.registrationPassword.value);
+    const data = await signUp(normalizeName(refs.registrationName.value), refs.registrationEmail.value, refs.registrationPassword.value);
     refs.registrationPassword.value = "";
     if (data.session) await refreshAccount(data.session);
     else setMessage(refs.registrationError, "Аккаунт создан. Откройте письмо от Supabase и подтвердите email, затем вернитесь сюда и войдите.", true);

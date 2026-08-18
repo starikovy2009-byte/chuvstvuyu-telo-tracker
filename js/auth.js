@@ -4,6 +4,12 @@ function appRedirectUrl() {
   return new URL("index.html", document.baseURI).href;
 }
 
+function recoveryRedirectUrl() {
+  const url = new URL("index.html", document.baseURI);
+  url.searchParams.set("recovery", "1");
+  return url.href;
+}
+
 export function russianAuthError(error, fallback = "Не удалось выполнить действие. Попробуйте ещё раз.") {
   if (!navigator.onLine) return "Нет подключения к интернету. Проверьте сеть и попробуйте ещё раз.";
   const message = String(error?.message || "").toLowerCase();
@@ -36,7 +42,7 @@ export async function signUp(displayName, email, password) {
 }
 
 export async function sendPasswordReset(email) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: appRedirectUrl() });
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: recoveryRedirectUrl() });
   if (error) throw new Error(russianAuthError(error));
 }
 

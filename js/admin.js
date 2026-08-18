@@ -1,5 +1,6 @@
-import { endOfMonth, endOfWeek, formatDate, startOfMonth, startOfWeek, todayMoscow } from "./dates.js";
-import { dailyScore, latestEntry, profileScore } from "./scoring.js";
+import { endOfMonth, endOfWeek, formatDate, formatMonth, startOfMonth, startOfWeek, todayMoscow } from "./dates.js";
+import { renderDailyResults } from "./members.js";
+import { activeDays, dailyScore, latestEntry, profileScore } from "./scoring.js";
 import { avatar, el, plural, sectionHeading } from "./ui.js";
 
 function requestDate(value) {
@@ -41,7 +42,7 @@ function joinRequestsBlock(requests, actions) {
   }
 
   if (requests.phase === "loading") {
-    section.append(el("p", { className: "empty-state", text: "Загружаем заявки из Supabase…" }));
+    section.append(el("p", { className: "empty-state", text: "Загружаем заявки…" }));
     return section;
   }
   if (requests.phase === "error") {
@@ -98,6 +99,159 @@ function coachStats(state) {
     .filter((entry) => activeIds.has(entry.profileId) && entry.localDate >= weekStart && entry.localDate <= weekEnd)
     .reduce((sum, entry) => sum + dailyScore(entry), 0);
   return { active: activeIds.size, filledToday, weekPoints };
+}
+
+function activeClubState(state) {
+  const profiles = state.profiles.filter((profile) => profile.status === "active");
+  const activeIds = new Set(profiles.map((profile) => profile.id));
+  return {
+    profiles,
+    dailyEntries: state.dailyEntries.filter((entry) => activeIds.has(entry.profileId))
+  };
+}
+
+export function buildCoachRanking(state, start = "0000-01-01", end = "9999-12-31") {
+  const periodEntries = state.dailyEntries.filter((entry) => entry.localDate >= start && entry.localDate <= end);
+  return state.profiles
+    .filter((profile) => profile.status === "active")
+    .map((profile) => ({
+      profile,
+      points: profileScore(periodEntries, profile.id),
+      activeDays: activeDays(periodEntries, profile.id)
+    }))
+    .sort((left, right) => right.points - left.points
+      || right.activeDays - left.activeDays
+      || left.profile.displayName.localeCompare(right.profile.displayName, "ru"))
+    .map((row, index) => ({ ...row, rank: index + 1 }));
+}
+
+function coachRankingSection(title, meta, ranking, emptyText) {
+  const section = el("section", { className: "coach-ranking-section", attrs: { "aria-label": title } });
+  section.append(el("div", { className: "coach-statistics-section-head" }, [
+    el("div", {}, [el("p", { className: "eyebrow", text: meta }), el("h2", { text: title })]),
+    el("span", { className: "status-pill", text: `${ranking.length} ${plural(ranking.length, ["участник", "участника", "участников"])}` })
+  ]));
+  if (!ranking.length) {
+    section.append(el("p", { className: "empty-state", text: emptyText }));
+    return section;
+  }
+  const list = el("div", { className: "coach-ranking-list" });
+  list.append(el("div", { className: "coach-ranking-head" }, [
+    el("span", { text: "№" }), el("span"), el("span", { text: "Участник" }), el("span", { text: "Дни" }), el("span", { text: "Баллы" })
+  ]));
+  ranking.forEach((row) => {
+    list.append(el("div", { className: "coach-ranking-row" }, [
+      el("span", { className: "place", text: String(row.rank).padStart(2, "0") }),
+      avatar(row.profile),
+      el("strong", { text: row.profile.displayName }),
+      el("span", {
+        className: "coach-rank-days",
+        text: row.activeDays,
+        attrs: { "aria-label": `${row.activeDays} ${plural(row.activeDays, ["активный день", "активных дня", "активных дней"])}` }
+      }),
+      el("span", { className: "coach-rank-points", text: row.points })
+    ]));
+  });
+  section.append(list);
+  return section;
+}
+
+function statisticsPage(state, ui, actions, requests) {
+  const today = todayMoscow();
+  const selectedDate = /^\d{4}-\d{2}-\d{2}$/.test(ui.coachStatsDate) && ui.coachStatsDate <= today ? ui.coachStatsDate : today;
+  const currentMonth = today.slice(0, 7);
+  const selectedMonth = /^\d{4}-\d{2}$/.test(ui.coachStatsMonth) && ui.coachStatsMonth <= currentMonth ? ui.coachStatsMonth : currentMonth;
+  const page = el("article", {
+    className: "page-view coach-page coach-statistics-page",
+    attrs: { "aria-busy": String(requests.rosterPhase === "loading") }
+  }, [
+    el("div", { className: "coach-statistics-title" }, [
+      el("div", {}, [
+        el("h1", { text: "Статистика клуба" }),
+        el("p", { className: "muted", text: "Рейтинги и результаты действующих участников клуба." })
+      ]),
+      el("button", {
+        className: "button button-secondary button-small",
+        type: "button",
+        text: requests.rosterPhase === "loading" ? "Обновляем…" : "Обновить данные",
+        disabled: requests.rosterPhase === "loading",
+        on: { click: actions.reloadRoster }
+      })
+    ]),
+    el("div", { className: "coach-statistics-filters" }, [
+      el("label", {}, [
+        el("span", { text: "Дата результатов" }),
+        el("input", {
+          type: "date",
+          value: selectedDate,
+          attrs: { max: today },
+          on: { change: (event) => actions.setStatsDate(event.currentTarget.value) }
+        })
+      ]),
+      el("label", {}, [
+        el("span", { text: "Месяц рейтинга" }),
+        el("input", {
+          type: "month",
+          value: selectedMonth,
+          attrs: { max: currentMonth },
+          on: { change: (event) => actions.setStatsMonth(event.currentTarget.value) }
+        })
+      ])
+    ])
+  ]);
+
+  if (requests.rosterPhase === "loading" || requests.rosterPhase === "idle") {
+    page.append(el("p", { className: "tracker-sync-message", text: "Загружаем статистику клуба…", attrs: { role: "status" } }));
+    return page;
+  }
+  if (requests.rosterPhase === "error") {
+    page.append(el("div", { className: "tracker-sync-error", attrs: { role: "alert" } }, [
+      el("p", { text: requests.rosterError || "Не удалось загрузить статистику клуба." }),
+      el("button", { className: "button button-secondary button-small", type: "button", text: "Попробовать снова", on: { click: actions.reloadRoster } })
+    ]));
+    return page;
+  }
+
+  const activeState = activeClubState(state);
+  if (!activeState.profiles.length) {
+    page.append(el("p", { className: "empty-state", text: "В клубе пока нет действующих участников для статистики." }));
+    return page;
+  }
+
+  const weekStart = startOfWeek(today);
+  const weekEnd = endOfWeek(today);
+  const monthStart = startOfMonth(selectedMonth);
+  const monthEnd = endOfMonth(selectedMonth);
+  page.append(
+    coachRankingSection(
+      "Герои недели",
+      `${formatDate(weekStart)} — ${formatDate(weekEnd)}`,
+      buildCoachRanking(activeState, weekStart, weekEnd),
+      "За текущую неделю пока нет данных."
+    ),
+    coachRankingSection(
+      "Звёзды месяца",
+      formatMonth(selectedMonth),
+      buildCoachRanking(activeState, monthStart, monthEnd),
+      "За выбранный месяц пока нет данных."
+    )
+  );
+
+  const resultsSection = el("section", { className: "coach-ranking-section", attrs: { "aria-label": "Результаты клуба" } }, [
+    el("div", { className: "coach-statistics-section-head" }, [
+      el("div", {}, [el("p", { className: "eyebrow", text: formatDate(selectedDate, { year: true }) }), el("h2", { text: "Результаты клуба" })]),
+      el("span", { className: "status-pill", text: `${activeState.profiles.length} ${plural(activeState.profiles.length, ["участник", "участника", "участников"])}` })
+    ]),
+    renderDailyResults(activeState, selectedDate, null)
+  ]);
+  page.append(resultsSection);
+  page.append(coachRankingSection(
+    "Рейтинг за всё время",
+    "Полный список действующих участников",
+    buildCoachRanking(activeState),
+    "В рейтинге пока нет действующих участников."
+  ));
+  return page;
 }
 
 function memberRows(state, profiles, ui, actions, requests) {
@@ -185,7 +339,7 @@ function membersPage(state, ui, actions, requests, status, title) {
     el("p", { className: "muted", text: status === "active" ? "Поиск, карточки и история действующих участников." : "Профили и история сохранены — участника можно вернуть в клуб." })
   ]);
   if (requests.rosterPhase === "loading") {
-    page.append(el("p", { className: "tracker-sync-message", text: "Сверяем состав клуба с Supabase…", attrs: { role: "status" } }));
+    page.append(el("p", { className: "tracker-sync-message", text: "Обновляем состав клуба…", attrs: { role: "status" } }));
   } else if (requests.rosterError) {
     page.append(el("div", { className: "tracker-sync-error", attrs: { role: "alert" } }, [
       el("p", { text: requests.rosterError }),
@@ -204,7 +358,7 @@ function membersPage(state, ui, actions, requests, status, title) {
   const search = el("input", {
     type: "search",
     value: ui.coachSearch,
-    attrs: { placeholder: "Поиск по имени", "aria-label": "Поиск участника по имени" },
+    attrs: { placeholder: "Поиск по имени или фамилии", "aria-label": "Поиск участника по имени или фамилии" },
     on: { input: (event) => actions.search(event.currentTarget.value) }
   });
   page.append(el("div", { className: "member-toolbar" }, [search, el("span", { className: "status-pill", text: `${state.profiles.filter((profile) => profile.status === status).length} ${plural(state.profiles.filter((profile) => profile.status === status).length, ["участник", "участника", "участников"])}` })]));
@@ -217,12 +371,11 @@ function dataPage(state, actions, requests) {
   const active = state.profiles.filter((profile) => profile.status === "active").length;
   const removed = state.profiles.filter((profile) => profile.status === "removed").length;
   const page = el("article", { className: "page-view coach-page" }, [
-    el("p", { className: "eyebrow", text: "Supabase" }),
     el("h1", { text: "Данные клуба" }),
-    el("p", { className: "muted", text: "Состав, статусы и отметки загружаются из защищённой базы клуба. Демонстрационные записи в кабинете тренера не используются." })
+    el("p", { className: "muted", text: "Актуальная информация о составе клуба и заполненных днях участников." })
   ]);
   if (requests.rosterPhase === "loading") {
-    page.append(el("p", { className: "tracker-sync-message", text: "Обновляем данные клуба из Supabase…", attrs: { role: "status" } }));
+    page.append(el("p", { className: "tracker-sync-message", text: "Обновляем данные клуба…", attrs: { role: "status" } }));
   } else if (requests.rosterError) {
     page.append(el("div", { className: "tracker-sync-error", attrs: { role: "alert" } }, [
       el("p", { text: requests.rosterError }),
@@ -242,6 +395,7 @@ function dataPage(state, actions, requests) {
 }
 
 export function renderCoach({ state, ui, actions, requests }) {
+  if (ui.coachTab === "statistics") return statisticsPage(state, ui, actions, requests);
   if (ui.coachTab === "removed") return membersPage(state, ui, actions, requests, "removed", "Удалённые из клуба");
   if (ui.coachTab === "data") return dataPage(state, actions, requests);
   return membersPage(state, ui, actions, requests, "active", "Действующие участники");

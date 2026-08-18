@@ -18,6 +18,58 @@ export function el(tag, options = {}, children = []) {
   return node;
 }
 
+function svgElement(tag, attrs) {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+  return node;
+}
+
+export function activityMark(kind, className, label = "") {
+  const mark = el("span", {
+    className,
+    attrs: label ? { "aria-label": label, title: label } : { "aria-hidden": "true" }
+  });
+  if (kind === "warmup" || kind === "mfr") {
+    mark.textContent = kind === "warmup" ? "☀" : "◎";
+    return mark;
+  }
+
+  const svg = svgElement("svg", {
+    class: "activity-mark-svg",
+    viewBox: "0 0 24 24",
+    focusable: "false",
+    "aria-hidden": "true"
+  });
+  if (kind === "workout") {
+    svg.append(svgElement("path", {
+      d: "M3 9v6M6 7.5v9M18 7.5v9M21 9v6M6 12h12",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "1.8",
+      "stroke-linecap": "square"
+    }));
+  } else if (kind === "steps") {
+    svg.append(
+      svgElement("path", {
+        d: "M8.2 11.6c1.8.3 3 2 2.7 3.8-.3 2-2.2 3.5-4.1 3.1-1.9-.4-3-2.4-2.4-4.2.5-1.7 2-3 3.8-2.7Z",
+        fill: "currentColor"
+      }),
+      svgElement("circle", { cx: "4.8", cy: "10.3", r: ".95", fill: "currentColor" }),
+      svgElement("circle", { cx: "6.8", cy: "9.3", r: "1.05", fill: "currentColor" }),
+      svgElement("circle", { cx: "9", cy: "9.4", r: ".9", fill: "currentColor" }),
+      svgElement("path", {
+        d: "M15.8 5.5c1.8-.3 3.4.9 3.8 2.7.4 1.9-.8 3.8-2.7 4.1-1.9.3-3.7-1.1-3.8-3.1-.2-1.8.9-3.4 2.7-3.7Z",
+        fill: "currentColor"
+      }),
+      svgElement("circle", { cx: "14", cy: "3.8", r: ".9", fill: "currentColor" }),
+      svgElement("circle", { cx: "16", cy: "2.9", r: "1.05", fill: "currentColor" }),
+      svgElement("circle", { cx: "18.2", cy: "3.2", r: ".95", fill: "currentColor" })
+    );
+  }
+  mark.append(svg);
+  return mark;
+}
+
 export function avatar(profile, size = "") {
   const className = `avatar ${size}`.trim();
   const node = el("span", { className, attrs: { "aria-label": `Аватар ${profile.displayName}` } });
@@ -27,6 +79,23 @@ export function avatar(profile, size = "") {
     node.textContent = profile.displayName.trim().charAt(0).toUpperCase() || "?";
   }
   return node;
+}
+
+function splitDisplayName(value) {
+  const parts = String(value || "").trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
+  return { firstName: parts[0] || "Участник", surname: parts[1] || "" };
+}
+
+export function participantDisplayName(profile, profiles = []) {
+  const { firstName, surname } = splitDisplayName(profile?.displayName);
+  if (!surname) return firstName;
+  const normalizedFirstName = firstName.toLocaleLowerCase("ru-RU");
+  const namesakes = profiles.filter((candidate) => {
+    if (candidate?.status && candidate.status !== "active") return false;
+    return splitDisplayName(candidate?.displayName).firstName.toLocaleLowerCase("ru-RU") === normalizedFirstName;
+  });
+  if (namesakes.length < 2) return firstName;
+  return `${firstName} ${Array.from(surname)[0].toLocaleUpperCase("ru-RU")}.`;
 }
 
 export function sectionHeading(title, meta = "", level = "h2") {

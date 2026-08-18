@@ -157,7 +157,7 @@
 
 .form-message { min-height: 24px; color: var(--red-strong); font-size: .88rem; }
 .form-message.success { color: var(--mint-strong); }
-input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], input[type="search"], select {
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], input[type="month"], input[type="search"], select {
   min-height: 48px;
   width: 100%;
   border: 1px solid var(--ink);

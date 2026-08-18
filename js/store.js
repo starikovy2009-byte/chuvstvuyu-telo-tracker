@@ -22,8 +22,15 @@ export function normalizeName(value) {
 
 export function validateName(value) {
   const name = normalizeName(value);
-  if (name.length < 2 || name.length > 24) return "Введите имя длиной от 2 до 24 символов";
+  if (name.length < 2 || name.length > 60) return "Введите имя длиной от 2 до 60 символов";
   if (!/^[A-Za-zА-Яа-яЁё -]+$/u.test(name)) return "Используйте буквы, пробел или дефис";
+  return "";
+}
+
+export function validateParticipantFullName(value) {
+  const error = validateName(value);
+  if (error) return error;
+  if (normalizeName(value).split(" ").length < 2) return "Укажите имя и фамилию через пробел";
   return "";
 }
 

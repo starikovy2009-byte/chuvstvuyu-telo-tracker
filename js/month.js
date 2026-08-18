@@ -2,7 +2,7 @@ import { addMonths, compareDates, formatDate, formatMonth, startOfMonth, endOfMo
 import { dailyScore, entriesInPeriod, totalScore } from "./scoring.js";
 import { buildRanking } from "./leaderboard.js";
 import { createCalendar } from "./tracker.js";
-import { avatar, el, plural, sectionHeading } from "./ui.js";
+import { avatar, el, participantDisplayName, plural, sectionHeading } from "./ui.js";
 
 function starsSection(ranking, activeProfileId, sync, actions) {
   const section = el("section", { className: "editorial-section" }, [sectionHeading("Звёзды месяца", "баллы")]);
@@ -18,6 +18,7 @@ function starsSection(ranking, activeProfileId, sync, actions) {
     return section;
   }
   const list = el("div", { className: "leaderboard" });
+  const rankingProfiles = ranking.map((row) => row.profile);
   const visible = ranking.filter((row) => row.rank <= 3 || row.profile.id === activeProfileId);
   visible.forEach((row) => {
     const isYou = row.profile.id === activeProfileId;
@@ -25,7 +26,7 @@ function starsSection(ranking, activeProfileId, sync, actions) {
       el("span", { className: "place", text: String(row.rank).padStart(2, "0") }),
       avatar(row.profile, isYou ? "you" : ""),
       el("strong", {}, [
-        `${row.profile.displayName}${isYou ? " · вы" : ""}`,
+        `${participantDisplayName(row.profile, rankingProfiles)}${isYou ? " · вы" : ""}`,
         el("small", { text: `${row.activeDays} ${plural(row.activeDays, ["активный день", "активных дня", "активных дней"])}` })
       ]),
       el("span", { className: "points", text: row.points })

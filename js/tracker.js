@@ -2,12 +2,12 @@ import { compareDates, formatDate, formatMonth, monthGrid, startOfWeek, endOfWee
 import { dailyScore } from "./scoring.js";
 import { buildRanking } from "./leaderboard.js";
 import { renderDailyResults } from "./members.js";
-import { avatar, el, plural, sectionHeading } from "./ui.js";
+import { activityMark, avatar, el, participantDisplayName, plural, sectionHeading } from "./ui.js";
 
 const ACTIVITY_CONFIG = [
-  { key: "warmup", number: "01", icon: "☀", title: "Зарядка", subtitle: "утреннее движение" },
-  { key: "mfr", number: "02", icon: "◎", title: "МФР", subtitle: "работа с роллом" },
-  { key: "workout", number: "03", icon: "✣", title: "Тренировка", subtitle: "основная практика" }
+  { key: "warmup", number: "01", title: "Зарядка", subtitle: "утреннее движение" },
+  { key: "mfr", number: "02", title: "МФР", subtitle: "работа с роллом" },
+  { key: "workout", number: "03", title: "Тренировка", subtitle: "основная практика" }
 ];
 
 function scorePhrase(score) {
@@ -109,7 +109,7 @@ function createTracker(state, profile, selectedDate, actions, sync = { ready: tr
       } }
     }, [
       el("span", { className: "activity-number", text: config.number }),
-      el("span", { className: "activity-icon", text: config.icon, attrs: { "aria-hidden": "true" } }),
+      activityMark(config.key, "activity-icon"),
       el("span", { className: "activity-copy" }, [el("strong", { text: config.title }), el("small", { text: config.subtitle })]),
       stateText
     ]);
@@ -132,7 +132,7 @@ function createTracker(state, profile, selectedDate, actions, sync = { ready: tr
   stepProgress.style.width = `${(Math.max(0, Math.min(7000, Number(draft.steps || 0))) / 7000) * 100}%`;
   const stepsCard = el("div", { className: "activity-card steps-card" }, [
     el("span", { className: "activity-number", text: "04" }),
-    el("span", { className: "activity-icon", text: "◌", attrs: { "aria-hidden": "true" } }),
+    activityMark("steps", "activity-icon"),
     el("label", { className: "activity-copy" }, [el("strong", { text: "Шаги" }), el("small", { text: "цель 7 000+" }), progressTrack]),
     stepsInput
   ]);
@@ -177,13 +177,14 @@ function createLeaderboard(title, ranking, activeProfileId, sync, actions) {
     return section;
   }
   const list = el("div", { className: "leaderboard" });
+  const rankingProfiles = ranking.map((row) => row.profile);
   const visible = ranking.filter((row) => row.rank <= 3 || row.profile.id === activeProfileId);
   visible.forEach((row) => {
     const isYou = row.profile.id === activeProfileId;
     list.append(el("div", { className: `leader-row${isYou ? " you" : ""}` }, [
       el("span", { className: "place", text: String(row.rank).padStart(2, "0") }),
       avatar(row.profile, isYou ? "you" : ""),
-      el("strong", { text: `${row.profile.displayName}${isYou ? " · вы" : ""}` }),
+      el("strong", { text: `${participantDisplayName(row.profile, rankingProfiles)}${isYou ? " · вы" : ""}` }),
       el("span", { className: "points", text: row.points })
     ]));
   });
@@ -217,19 +218,20 @@ export function renderOverview({ state, clubState = state, clubSync = { ready: t
       el("div", { className: "hero-photo studio" }, [el("img", { attrs: { src: "assets/source/overview-studio.jpg", alt: "Светлый зал фитнес-студии с ковриками" } })])
     ])
   );
-  const layout = el("div", { className: "editorial-layout" });
-  const left = el("div", { className: "editorial-column" }, [createTracker(state, profile, selectedDate, actions, sync)]);
-  left.append(el("section", { className: "editorial-section" }, [
+  const layout = el("div", { className: "editorial-layout overview-editorial-layout" });
+  const trackerSection = createTracker(state, profile, selectedDate, actions, sync);
+  trackerSection.classList.add("overview-tracker-section");
+  const photoSection = el("section", { className: "editorial-section overview-photo-section" }, [
     el("div", { className: "photo-pair" }, [
       el("figure", {}, [el("img", { attrs: { src: "assets/source/overview-coach-full.png", alt: "Тренер выполняет практику с массажным роллом" } })])
     ])
-  ]));
-  const right = el("div", { className: "editorial-column" });
-  const calendarSection = el("section", { className: "editorial-section" }, [
+  ]);
+  const calendarSection = el("section", { className: "editorial-section overview-calendar-section" }, [
     el("div", { className: "calendar-heading" }, [el("h2", { text: formatMonth(selectedDate.slice(0, 7)) })]),
     createCalendar({ month: selectedDate.slice(0, 7), entries: state.dailyEntries, profile, selectedDate, today, onSelect: actions.selectDate, entriesReady: sync.ready })
   ]);
-  right.append(calendarSection, createLeaderboard("Герои недели", weekRanking, profile.id, clubSync, actions));
+  const weekSection = createLeaderboard("Герои недели", weekRanking, profile.id, clubSync, actions);
+  weekSection.classList.add("overview-week-section");
   const resultsSection = el("section", { className: "editorial-section" }, [sectionHeading("Результаты клуба", formatDate(ui.resultsDate))]);
   const dateInput = el("input", {
     type: "date",
@@ -241,8 +243,8 @@ export function renderOverview({ state, clubState = state, clubSync = { ready: t
   const resultsStatus = clubStatus(clubSync, actions, "Загружаем результаты клуба из Supabase…");
   if (resultsStatus) resultsSection.append(resultsStatus);
   else resultsSection.append(renderDailyResults(clubState, ui.resultsDate, profile.id));
-  right.append(resultsSection);
-  layout.append(left, right);
+  const resultsColumn = el("div", { className: "overview-results-column" }, [weekSection, resultsSection]);
+  layout.append(trackerSection, photoSection, calendarSection, resultsColumn);
   root.append(layout);
   return root;
 }

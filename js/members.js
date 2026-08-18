@@ -1,9 +1,17 @@
 import { dailyScore } from "./scoring.js";
-import { avatar, el } from "./ui.js";
+import { activityMark, avatar, el, participantDisplayName } from "./ui.js";
 
 export function renderDailyResults(state, dateString, activeProfileId) {
   const wrap = el("div", { className: "daily-results" });
   const profiles = state.profiles.filter((profile) => profile.status === "active");
+  const activityLabels = ["Зарядка", "МФР", "Тренировка", "7000 шагов"];
+  const activityKeys = ["warmup", "mfr", "workout", "steps"];
+  wrap.append(el("div", { className: "daily-result-head", attrs: { "aria-label": "Обозначения активностей" } }, [
+    el("span", { attrs: { "aria-hidden": "true" } }),
+    el("span", { attrs: { "aria-hidden": "true" } }),
+    ...activityKeys.map((key, index) => activityMark(key, "activity-symbol", activityLabels[index])),
+    el("span", { attrs: { "aria-hidden": "true" } })
+  ]));
   const rows = profiles.map((profile) => ({
     profile,
     entry: state.dailyEntries.find((entry) => entry.profileId === profile.id && entry.localDate === dateString) || null
@@ -19,11 +27,11 @@ export function renderDailyResults(state, dateString, activeProfileId) {
     ];
     const row = el("div", { className: `daily-result-row${profile.id === activeProfileId ? " you" : ""}` }, [
       avatar(profile, profile.id === activeProfileId ? "you" : ""),
-      el("strong", { text: `${profile.displayName}${profile.id === activeProfileId ? " · вы" : ""}` }),
+      el("strong", { text: `${participantDisplayName(profile, profiles)}${profile.id === activeProfileId ? " · вы" : ""}` }),
       ...statuses.map((done, index) => el("span", {
         className: `activity-dot${done ? " done" : ""}`,
         text: done ? "✓" : "–",
-        attrs: { "aria-label": `${["Зарядка", "МФР", "Тренировка", "7000 шагов"][index]}: ${done ? "выполнено" : "не отмечено"}` }
+        attrs: { "aria-label": `${activityLabels[index]}: ${done ? "выполнено" : "не отмечено"}` }
       })),
       el("b", { text: `${score}/4` })
     ]);

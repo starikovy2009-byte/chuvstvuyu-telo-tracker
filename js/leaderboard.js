@@ -1,6 +1,6 @@
 import { activeDays, profileScore } from "./scoring.js";
 import { diffDays, todayMoscow } from "./dates.js";
-import { avatar, el, plural } from "./ui.js";
+import { avatar, el, participantDisplayName, plural } from "./ui.js";
 
 export function buildRanking(state, start = "0000-01-01", end = "9999-12-31") {
   const periodEntries = state.dailyEntries.filter((entry) => entry.localDate >= start && entry.localDate <= end);
@@ -30,6 +30,7 @@ export function renderRating({ state, profile, actions = {}, sync = { ready: tru
   const ranking = sync.ready ? buildRanking(state) : [];
   const own = findRankingRow(ranking, profile.id);
   const podiumRows = ranking.filter((row) => row.rank <= 3);
+  const rankingProfiles = ranking.map((row) => row.profile);
   const root = el("article", { className: "page-view rating-page" });
   root.append(el("section", { className: "rating-hero" }, [
     el("div", { className: "rating-summary" }, [
@@ -65,7 +66,7 @@ export function renderRating({ state, profile, actions = {}, sync = { ready: tru
       el("span", { className: "podium-place", text: String(row.rank).padStart(2, "0") }),
       el("div", {}, [
         avatar(row.profile),
-        el("strong", { text: row.profile.displayName }),
+        el("strong", { text: participantDisplayName(row.profile, rankingProfiles) }),
         el("small", { text: `${row.activeDays} ${plural(row.activeDays, ["активный день", "активных дня", "активных дней"])}` }),
         el("b", { text: `${row.points} ${plural(row.points, ["балл", "балла", "баллов"])}` })
       ])
@@ -85,7 +86,7 @@ export function renderRating({ state, profile, actions = {}, sync = { ready: tru
       el("span", { className: "place", text: String(row.rank).padStart(2, "0") }),
       avatar(row.profile, isYou ? "you" : ""),
       el("strong", {}, [
-        `${row.profile.displayName}${isYou ? " · вы" : ""}`,
+        `${participantDisplayName(row.profile, rankingProfiles)}${isYou ? " · вы" : ""}`,
         el("small", { text: `в клубе ${clubDays} ${plural(clubDays, ["день", "дня", "дней"])}` })
       ]),
       el("span", { className: "rank-days", text: `${row.activeDays} ${plural(row.activeDays, ["день", "дня", "дней"])}` }),
