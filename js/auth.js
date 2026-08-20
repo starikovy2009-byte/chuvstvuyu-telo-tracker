@@ -1,4 +1,6 @@
-import { supabase } from "./supabase-config.js";
+import { getRememberLogin, setRememberLogin, supabase } from "./supabase-config.js";
+
+export { getRememberLogin, setRememberLogin };
 
 function appRedirectUrl() {
   return new URL("index.html", document.baseURI).href;

@@ -1,11 +1,13 @@
 import { renderCoach } from "./admin.js";
 import {
   clearRecoveryAddress,
+  getRememberLogin,
   getSession,
   loadAccount,
   observeAuth,
   russianAuthError,
   sendPasswordReset,
+  setRememberLogin,
   signIn,
   signOut,
   signUp,
@@ -55,6 +57,7 @@ const refs = {
   loginForm: document.querySelector("#login-form"),
   loginEmail: document.querySelector("#login-email"),
   loginPassword: document.querySelector("#login-password"),
+  loginRemember: document.querySelector("#login-remember"),
   loginMessage: document.querySelector("#login-message"),
   registrationForm: document.querySelector("#registration-form"),
   registrationName: document.querySelector("#registration-name"),
@@ -74,6 +77,8 @@ const refs = {
   confirmMessage: document.querySelector("#confirm-message"),
   confirmAction: document.querySelector("#confirm-action")
 };
+
+refs.loginRemember.checked = getRememberLogin();
 
 const RECOVERY_IN_ADDRESS = window.location.hash.includes("type=recovery") || window.location.search.includes("type=recovery") || window.location.search.includes("recovery=1");
 const authState = {
@@ -762,6 +767,7 @@ refs.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   setMessage(refs.loginMessage, "");
   if (!refs.loginForm.reportValidity()) return;
+  setRememberLogin(refs.loginRemember.checked);
   setFormBusy(refs.loginForm, true);
   try {
     const data = await signIn(refs.loginEmail.value, refs.loginPassword.value);

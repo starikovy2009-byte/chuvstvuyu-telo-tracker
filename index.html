@@ -7,9 +7,9 @@
   <meta name="description" content="Закрытый трекер клуба «ЧувствуЮ тело»">
   <meta name="apple-mobile-web-app-title" content="ЧУВСТВУЮ ТЕЛО">
   <title>ЧУВСТВУЮ ТЕЛО — трекер клуба</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
-  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png?v=2">
+  <link rel="manifest" href="site.webmanifest?v=2">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
@@ -80,6 +80,10 @@
                 </svg>
               </button>
             </div>
+            <label class="remember-login" for="login-remember">
+              <input id="login-remember" name="remember" type="checkbox">
+              <span>Запомнить меня на этом устройстве</span>
+            </label>
             <p id="login-message" class="form-message" role="alert"></p>
             <button class="button button-primary" type="submit">Войти</button>
             <button class="button button-link" type="button" data-action="open-forgot">Забыли пароль?</button>

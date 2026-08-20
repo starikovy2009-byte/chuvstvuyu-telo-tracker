@@ -30,6 +30,8 @@
 .password-eye-closed { display: none; }
 .password-toggle[aria-pressed="true"] .password-eye-open { display: none; }
 .password-toggle[aria-pressed="true"] .password-eye-closed { display: block; }
+.auth-form > .remember-login { margin: 14px 0 10px; display: flex; align-items: center; gap: 9px; font-size: .88rem; letter-spacing: normal; line-height: 1.35; text-transform: none; cursor: pointer; }
+.remember-login input { width: 18px; height: 18px; margin: 0; flex: 0 0 18px; accent-color: var(--ink); cursor: pointer; }
 .auth-form .field-hint { margin-top: 6px; color: var(--muted); }
 .auth-form > .button-primary { width: 100%; margin-top: 4px; }
 .auth-form > .button-link { align-self: center; min-height: 44px; margin-top: 8px; }
