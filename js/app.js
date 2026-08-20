@@ -44,6 +44,9 @@ const refs = {
   loading: document.querySelector("#loading-screen"),
   welcome: document.querySelector("#welcome-screen"),
   auth: document.querySelector("#auth-screen"),
+  authIntroEyebrow: document.querySelector("#auth-intro-eyebrow"),
+  authIntroTitle: document.querySelector("#auth-intro-title"),
+  authIntroText: document.querySelector("#auth-intro-text"),
   accountStatus: document.querySelector("#account-status-screen"),
   accountStatusKicker: document.querySelector("#account-status-kicker"),
   accountStatusTitle: document.querySelector("#account-status-title"),
@@ -76,6 +79,29 @@ const refs = {
   confirmTitle: document.querySelector("#confirm-title"),
   confirmMessage: document.querySelector("#confirm-message"),
   confirmAction: document.querySelector("#confirm-action")
+};
+
+const AUTH_INTRO_COPY = {
+  login: {
+    eyebrow: "Рады видеть вас",
+    title: "Продолжим с того места, где вы остановились",
+    text: "Войдите, чтобы отмечать практики, наблюдать за своим ритмом и видеть движение клуба."
+  },
+  register: {
+    eyebrow: "Начнём знакомство",
+    title: "Создайте свой профиль участника",
+    text: "После регистрации заявка отправится тренеру. Когда тренер её подтвердит, вам откроется личный трекер."
+  },
+  forgot: {
+    eyebrow: "Восстановление доступа",
+    title: "Вернём вас в личный кабинет",
+    text: "Укажите email, с которым вы регистрировались, и получите ссылку для создания нового пароля."
+  },
+  reset: {
+    eyebrow: "Новый пароль",
+    title: "Придумайте надёжный пароль",
+    text: "После сохранения нового пароля вы сможете снова войти в личный кабинет."
+  }
 };
 
 refs.loginRemember.checked = getRememberLogin();
@@ -192,6 +218,10 @@ function showAuthView(view, notice = "") {
 
 function renderAuth() {
   refs.auth.hidden = false;
+  const introCopy = AUTH_INTRO_COPY[authState.view] || AUTH_INTRO_COPY.login;
+  refs.authIntroEyebrow.textContent = introCopy.eyebrow;
+  refs.authIntroTitle.textContent = introCopy.title;
+  refs.authIntroText.textContent = introCopy.text;
   refs.loginForm.hidden = authState.view !== "login";
   refs.registrationForm.hidden = authState.view !== "register";
   refs.forgotForm.hidden = authState.view !== "forgot";
