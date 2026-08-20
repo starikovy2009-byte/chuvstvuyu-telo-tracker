@@ -29,18 +29,55 @@ export function activityMark(kind, className, label = "") {
     className,
     attrs: label ? { "aria-label": label, title: label } : { "aria-hidden": "true" }
   });
-  if (kind === "warmup" || kind === "mfr") {
-    mark.textContent = kind === "warmup" ? "☀" : "◎";
-    return mark;
-  }
-
   const svg = svgElement("svg", {
     class: "activity-mark-svg",
     viewBox: "0 0 24 24",
     focusable: "false",
     "aria-hidden": "true"
   });
-  if (kind === "workout") {
+  if (kind === "warmup") {
+    svg.append(
+      svgElement("circle", {
+        cx: "12",
+        cy: "4.2",
+        r: "1.8",
+        fill: "currentColor"
+      }),
+      svgElement("path", {
+        d: "M12 6.8v5.9M12 8.3 7.4 5.9M12 8.3l4.6-2.4M12 12.7 8.2 20M12 12.7l3.8 7.3",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "1.8",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+      })
+    );
+  } else if (kind === "mfr") {
+    svg.append(
+      svgElement("path", {
+        d: "M5 7.5h12c2.2 0 4 2 4 4.5s-1.8 4.5-4 4.5H5",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "1.8",
+        "stroke-linejoin": "round"
+      }),
+      svgElement("ellipse", {
+        cx: "5",
+        cy: "12",
+        rx: "2.5",
+        ry: "4.5",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "1.8"
+      }),
+      svgElement("path", {
+        d: "M17 7.5c-1.4 0-2.5 2-2.5 4.5s1.1 4.5 2.5 4.5",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "1.4"
+      })
+    );
+  } else if (kind === "workout") {
     svg.append(svgElement("path", {
       d: "M3 9v6M6 7.5v9M18 7.5v9M21 9v6M6 12h12",
       fill: "none",

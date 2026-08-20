@@ -16,7 +16,7 @@
 .access-head h1 { margin: 0; font-family: var(--font-serif); font-size: clamp(2rem, 4vw, 3.6rem); font-weight: 400; }
 .auth-layout { display: grid; grid-template-columns: minmax(260px, .82fr) minmax(320px, 1.18fr); gap: 20px; align-items: stretch; }
 .auth-intro { min-height: 430px; border: 1px solid var(--ink); padding: clamp(26px, 4vw, 52px); display: flex; flex-direction: column; justify-content: center; background: var(--rose-soft); }
-.auth-intro h2 { max-width: 520px; margin-bottom: 22px; font-family: var(--font-serif); font-size: clamp(2rem, 4vw, 3.8rem); font-weight: 400; line-height: 1.02; }
+.auth-intro h2 { max-width: 520px; margin-bottom: 22px; font-family: var(--font-serif); font-size: clamp(1.85rem, 3vw, 3rem); font-weight: 400; line-height: 1.06; overflow-wrap: break-word; hyphens: auto; }
 .auth-intro > p:last-child { max-width: 490px; color: var(--muted); }
 .auth-form { min-height: 430px; padding: clamp(22px, 4vw, 38px); display: flex; flex-direction: column; }
 .auth-form > label { margin: 18px 0 7px; font-size: .78rem; letter-spacing: .07em; text-transform: uppercase; }
