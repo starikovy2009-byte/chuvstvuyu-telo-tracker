@@ -43,7 +43,7 @@ export function renderRating({ state, profile, actions = {}, sync = { ready: tru
         ]) : null
       ])
     ]),
-    el("div", { className: "rating-photo" }, [el("img", { attrs: { src: "assets/source/rating-coach.png", alt: "Тренер клуба с гантелью" } })])
+    el("div", { className: "rating-photo" }, [el("img", { attrs: { src: "assets/photos/rating-coach-dumbbell.jpg", alt: "Тренер клуба выполняет упражнение с гантелью" } })])
   ]));
   if (sync.loading) {
     root.append(el("section", { className: "editorial-section rating-sync" }, [

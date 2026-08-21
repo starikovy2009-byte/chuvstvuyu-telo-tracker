@@ -215,7 +215,7 @@ export function renderOverview({ state, clubState = state, clubSync = { ready: t
           el("span", { text: selectedCalendarDate })
         ])
       ]),
-      el("div", { className: "hero-photo studio" }, [el("img", { attrs: { src: "assets/source/overview-studio.jpg", alt: "Светлый зал фитнес-студии с ковриками" } })])
+      el("div", { className: "hero-photo studio" }, [el("img", { attrs: { src: "assets/photos/overview-equipment-shelves.jpg", alt: "Стеллаж с мячами, ремнями, блоками и гантелями для тренировок" } })])
     ])
   );
   const layout = el("div", { className: "editorial-layout overview-editorial-layout" });
@@ -223,7 +223,7 @@ export function renderOverview({ state, clubState = state, clubSync = { ready: t
   trackerSection.classList.add("overview-tracker-section");
   const photoSection = el("section", { className: "editorial-section overview-photo-section" }, [
     el("div", { className: "photo-pair" }, [
-      el("figure", {}, [el("img", { attrs: { src: "assets/source/overview-coach-full.png", alt: "Тренер выполняет практику с массажным роллом" } })])
+      el("figure", {}, [el("img", { attrs: { src: "assets/photos/overview-coach-dumbbell.jpg", alt: "Тренер выполняет упражнение с гантелью" } })])
     ])
   ]);
   const calendarSection = el("section", { className: "editorial-section overview-calendar-section" }, [

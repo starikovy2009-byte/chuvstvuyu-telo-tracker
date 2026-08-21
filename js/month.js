@@ -88,7 +88,7 @@ export function renderMonth({ state, clubState = state, clubSync = { ready: true
   const side = el("aside", { className: "editorial-column month-side" }, [
     starsSection(ranking, profile.id, clubSync, actions),
     el("div", { className: "month-note" }, [
-      el("img", { attrs: { src: "assets/source/month-equipment.png", alt: "Гантели, спортивная лента и бутылка воды" } }),
+      el("img", { attrs: { src: "assets/photos/month-dumbbells-closeup.jpg", alt: "Тренер держит гантели во время тренировки" } }),
       el("p", { text: "Каждая отметка — ещё один день в контакте с телом." })
     ])
   ]);
