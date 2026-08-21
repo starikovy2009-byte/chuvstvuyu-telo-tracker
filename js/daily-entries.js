@@ -1,8 +1,9 @@
 import { russianAuthError } from "./auth.js";
 import { compareDates, endOfMonth, parseDate, toDateString, todayMoscow } from "./dates.js";
+import { normalizeSleepHours } from "./daily-entry-values.js";
 import { supabase } from "./supabase-config.js";
 
-const ENTRY_FIELDS = "user_id, entry_date, warmup_done, mfr_done, workout_done, steps";
+const ENTRY_FIELDS = "user_id, entry_date, warmup_done, mfr_done, workout_done, steps, water_done, sleep_hours";
 
 function validateDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || toDateString(parseDate(value)) !== value) {
@@ -23,6 +24,9 @@ function dailyEntryError(error, fallback) {
   if (translated) return translated;
   const code = String(error?.code || "");
   const message = String(error?.message || "").toLowerCase();
+  if (code === "42703" || message.includes("water_done") || message.includes("sleep_hours")) {
+    return "В Supabase ещё нет полей воды и сна. Выполните миграцию 20260821_add_water_sleep_to_daily_entries.sql и попробуйте снова.";
+  }
   if (code === "42501" || message.includes("row-level security")) {
     return "Supabase запретил доступ к daily_entries. Проверьте, что существующие RLS-политики разрешают участнику читать, создавать и изменять только свои строки.";
   }
@@ -69,7 +73,9 @@ function toClientEntry(row, userId) {
     warmup: Boolean(row.warmup_done),
     mfr: Boolean(row.mfr_done),
     workout: Boolean(row.workout_done),
-    steps: Number(row.steps || 0)
+    steps: Number(row.steps || 0),
+    water: Boolean(row.water_done),
+    sleepHours: row.sleep_hours === null || row.sleep_hours === undefined ? null : Number(row.sleep_hours)
   };
 }
 
@@ -120,7 +126,9 @@ export async function saveDailyEntry(entryDate, values) {
     warmup_done: Boolean(values.warmup),
     mfr_done: Boolean(values.mfr),
     workout_done: Boolean(values.workout),
-    steps: normalizeSteps(values.steps)
+    steps: normalizeSteps(values.steps),
+    water_done: Boolean(values.water),
+    sleep_hours: normalizeSleepHours(values.sleepHours)
   };
 
   const existingEntry = await loadEntryForUser(user.id, entryDate);
@@ -128,7 +136,9 @@ export async function saveDailyEntry(entryDate, values) {
     warmup_done: payload.warmup_done,
     mfr_done: payload.mfr_done,
     workout_done: payload.workout_done,
-    steps: payload.steps
+    steps: payload.steps,
+    water_done: payload.water_done,
+    sleep_hours: payload.sleep_hours
   };
   let error;
   if (existingEntry) {

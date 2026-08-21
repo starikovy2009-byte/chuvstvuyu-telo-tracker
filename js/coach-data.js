@@ -2,7 +2,7 @@ import { russianAuthError } from "./auth.js";
 import { todayMoscow } from "./dates.js";
 import { supabase } from "./supabase-config.js";
 
-const ENTRY_FIELDS = "user_id, entry_date, warmup_done, mfr_done, workout_done, steps";
+const ENTRY_FIELDS = "user_id, entry_date, warmup_done, mfr_done, workout_done, steps, water_done, sleep_hours";
 const ENTRY_PAGE_SIZE = 1000;
 
 function coachDataError(error, fallback) {
@@ -10,6 +10,9 @@ function coachDataError(error, fallback) {
   if (translated) return translated;
   const code = String(error?.code || "");
   const message = String(error?.message || "").toLowerCase();
+  if (code === "42703" || message.includes("water_done") || message.includes("sleep_hours")) {
+    return "В Supabase ещё нет полей воды и сна. Выполните миграцию 20260821_add_water_sleep_to_daily_entries.sql.";
+  }
   if (code === "42501" || message.includes("row-level security") || message.includes("permission denied")) {
     return "Supabase запретил тренеру читать результаты участников. Выполните SQL-файл supabase/rls-coach-results.sql.";
   }
@@ -101,7 +104,9 @@ export async function loadCoachClubData() {
       warmup: Boolean(entry.warmup_done),
       mfr: Boolean(entry.mfr_done),
       workout: Boolean(entry.workout_done),
-      steps: Number(entry.steps || 0)
+      steps: Number(entry.steps || 0),
+      water: Boolean(entry.water_done),
+      sleepHours: entry.sleep_hours === null || entry.sleep_hours === undefined ? null : Number(entry.sleep_hours)
     }));
 
   return { profiles, dailyEntries };

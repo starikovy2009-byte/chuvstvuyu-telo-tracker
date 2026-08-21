@@ -100,8 +100,8 @@
 .activity-state { color: var(--muted); text-align: right; }
 .activity-card[aria-pressed="true"] { background: var(--rose-soft); }
 .activity-card[aria-pressed="true"] .activity-state { color: var(--red); }
-.steps-card { cursor: default; }
-.steps-card input { width: 112px; min-height: 44px; border: 0; border-bottom: 1px solid var(--ink); padding-inline: 4px; background: transparent; text-align: right; }
+.steps-card, .sleep-card { cursor: default; }
+.steps-card input, .sleep-card input { width: 112px; min-height: 44px; border: 0; border-bottom: 1px solid var(--ink); padding-inline: 4px; background: transparent; text-align: right; }
 .step-progress { height: 4px; margin-top: 6px; background: var(--line-soft); }
 .step-progress span { display: block; height: 100%; background: var(--red); }
 .tracker-actions { margin-top: 16px; }
@@ -139,8 +139,8 @@
 .calendar-day.today .day-number { min-width: 24px; min-height: 24px; margin: -2px; border-radius: 50%; background: var(--red); color: var(--white); display: inline-grid; place-items: center; }
 .calendar-day.today.done .day-number { background: var(--white); color: var(--red); }
 .calendar-day small { font-size: .65rem; opacity: .82; }
-.calendar-marks { display: flex; gap: 3px; }
-.calendar-marks i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.calendar-marks { display: flex; gap: 2px; }
+.calendar-marks i { width: 3px; height: 3px; border-radius: 50%; background: currentColor; }
 .calendar-legend { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: .8rem; }
 .calendar-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend-swatch { width: 12px; height: 12px; background: var(--ink); }
@@ -162,10 +162,10 @@
 
 .club-results-filter { margin: 16px 0; display: flex; align-items: flex-end; gap: 10px; }
 .club-results-filter label { flex: 1; display: grid; gap: 5px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
-.daily-result-head { min-height: 32px; border-bottom: 1px solid var(--ink); display: grid; grid-template-columns: 40px minmax(0, 1fr) repeat(4, 24px) 36px; align-items: center; gap: 7px; }
+.daily-result-head { min-height: 32px; border-bottom: 1px solid var(--ink); display: grid; grid-template-columns: 40px minmax(0, 1fr) repeat(6, 24px) 36px; align-items: center; gap: 7px; }
 .daily-result-head .activity-symbol { width: 20px; height: 22px; color: var(--ink); display: grid; place-items: center; text-align: center; font-size: 1rem; line-height: 1; }
 .daily-result-head .activity-symbol .activity-mark-svg { width: 20px; height: 20px; }
-.daily-result-row { min-height: 62px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 40px minmax(0, 1fr) repeat(4, 24px) 36px; align-items: center; gap: 7px; }
+.daily-result-row { min-height: 62px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 40px minmax(0, 1fr) repeat(6, 24px) 36px; align-items: center; gap: 7px; }
 .daily-result-row strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .daily-result-row > b { text-align: right; }
 .activity-dot { width: 20px; height: 20px; border: 1px solid var(--line); display: grid; place-items: center; font-size: .7rem; }
@@ -381,7 +381,7 @@
   .date-navigator { padding-inline: 14px; }
   .activity-card { grid-template-columns: 28px 40px minmax(0, 1fr) 78px; }
   .activity-copy small { font-size: .75rem; }
-  .steps-card input { width: 78px; }
+  .steps-card input, .sleep-card input { width: 78px; }
   .photo-pair figure { height: 118px; }
   .month-title { align-items: flex-start; flex-direction: column; }
   .month-score { text-align: left; }
@@ -444,7 +444,7 @@
   .editorial-section { padding: 14px; }
   .activity-card { gap: 6px; grid-template-columns: 24px 36px minmax(0, 1fr) 68px; }
   .activity-icon { width: 34px; height: 34px; }
-  .steps-card input { width: 68px; font-size: .9rem; }
+  .steps-card input, .sleep-card input { width: 68px; font-size: .9rem; }
   .leader-row { grid-template-columns: 34px 38px minmax(0, 1fr) auto; }
   .calendar-day { min-height: 46px; }
   .profile-stat { padding: 14px; }

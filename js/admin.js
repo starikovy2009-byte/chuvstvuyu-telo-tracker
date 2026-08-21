@@ -1,6 +1,7 @@
 import { endOfMonth, endOfWeek, formatDate, formatMonth, startOfMonth, startOfWeek, todayMoscow } from "./dates.js";
 import { renderDailyResults } from "./members.js";
 import { activeDays, dailyScore, latestEntry, profileScore } from "./scoring.js";
+import { formatSleepHours, MAX_DAILY_SCORE } from "./daily-entry-values.js";
 import { avatar, el, plural, sectionHeading } from "./ui.js";
 
 function requestDate(value) {
@@ -303,7 +304,7 @@ function memberDetail(state, profile, ui, actions, requests) {
     const entries = state.dailyEntries.filter((entry) => entry.profileId === profile.id).sort((a, b) => b.localDate.localeCompare(a.localDate)).slice(0, 14);
     entries.forEach((entry) => history.append(el("div", { className: "history-row" }, [
       el("span", { text: formatDate(entry.localDate, { weekday: true }) }),
-      el("strong", { text: `${dailyScore(entry)}/4 · ${Number(entry.steps || 0).toLocaleString("ru-RU")} шагов` })
+      el("strong", { text: `${dailyScore(entry)}/${MAX_DAILY_SCORE} · ${Number(entry.steps || 0).toLocaleString("ru-RU")} шагов · вода ${entry.water ? "✓" : "—"} · сон ${formatSleepHours(entry.sleepHours)} ч` })
     ])));
     if (!entries.length) history.append(el("p", { className: "empty-state", text: "Участник ещё не заполнял трекер" }));
     card.append(history);

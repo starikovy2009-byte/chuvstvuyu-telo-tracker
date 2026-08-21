@@ -1,5 +1,6 @@
 import { diffDays, formatDate, startOfWeek, endOfWeek, todayMoscow } from "./dates.js";
 import { activeDays, bestDailyScore, currentStreak, membershipDays, practiceStats, profileScore } from "./scoring.js";
+import { MAX_DAILY_SCORE } from "./daily-entry-values.js";
 import { buildRanking, findRankingRow } from "./leaderboard.js";
 import { activityMark, avatar, el, plural, sectionHeading } from "./ui.js";
 import { prepareAvatar } from "./avatar.js";
@@ -8,7 +9,9 @@ const PRACTICES = [
   ["warmup", "Зарядка"],
   ["mfr", "МФР"],
   ["workout", "Тренировка"],
-  ["steps", "7000+ шагов"]
+  ["steps", "7000+ шагов"],
+  ["water", "Вода 1,5 л"],
+  ["sleep", "Сон 7+ часов"]
 ];
 
 function createProfileEditForm(profile, actions) {
@@ -74,7 +77,7 @@ export function renderProfile({ state, profile, ui, actions }) {
   root.append(el("section", { className: "profile-stats" }, [
     [active, plural(active, ["активный день", "активных дня", "активных дней"])],
     [streak, plural(streak, ["день подряд", "дня подряд", "дней подряд"])],
-    [`${best}/4`, "лучший день"],
+    [`${best}/${MAX_DAILY_SCORE}`, "лучший день"],
     [months, plural(months, ["месяц в клубе", "месяца в клубе", "месяцев в клубе"])]
   ].map(([value, label]) => el("div", { className: "profile-stat" }, [el("strong", { text: value }), el("span", { text: label })]))));
   const content = el("div", { className: "profile-content" });

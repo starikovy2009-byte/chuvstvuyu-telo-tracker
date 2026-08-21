@@ -1,5 +1,6 @@
 import { addMonths, compareDates, formatDate, formatMonth, startOfMonth, endOfMonth, todayMoscow } from "./dates.js";
 import { dailyScore, entriesInPeriod, totalScore } from "./scoring.js";
+import { MAX_DAILY_SCORE } from "./daily-entry-values.js";
 import { buildRanking } from "./leaderboard.js";
 import { createCalendar } from "./tracker.js";
 import { avatar, el, participantDisplayName, plural, sectionHeading } from "./ui.js";
@@ -81,7 +82,7 @@ export function renderMonth({ state, clubState = state, clubSync = { ready: true
     createCalendar({ month, entries: state.dailyEntries, profile, selectedDate: ui.selectedDate, today, detailed: true, onSelect: actions.selectDate, entriesReady: sync.ready }),
     el("div", { className: "selected-day-info" }, [
       el("strong", { text: formatDate(ui.selectedDate, { weekday: true }) }),
-      el("span", { className: "accent", text: sync.ready ? `${dailyScore(state.dailyEntries.find((entry) => entry.profileId === profile.id && entry.localDate === ui.selectedDate))} из 4 баллов` : "Загрузка…" })
+      el("span", { className: "accent", text: sync.ready ? `${dailyScore(state.dailyEntries.find((entry) => entry.profileId === profile.id && entry.localDate === ui.selectedDate))} из ${MAX_DAILY_SCORE} баллов` : "Загрузка…" })
     ])
   ];
   calendarSide.append(...calendarContent.filter(Boolean));

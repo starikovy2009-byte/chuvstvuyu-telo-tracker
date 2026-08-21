@@ -1,11 +1,14 @@
 import { addDays, compareDates, diffDays, startOfWeek, todayMoscow } from "./dates.js";
+import { sleepGoalMet, STEPS_GOAL } from "./daily-entry-values.js";
 
 export function dailyScore(entry) {
   if (!entry) return 0;
   return Number(Boolean(entry.warmup))
     + Number(Boolean(entry.mfr))
     + Number(Boolean(entry.workout))
-    + Number(Number(entry.steps || 0) >= 7000);
+    + Number(Number(entry.steps || 0) >= STEPS_GOAL)
+    + Number(Boolean(entry.water))
+    + Number(sleepGoalMet(entry.sleepHours));
 }
 
 export function entriesForProfile(entries, profileId) {
@@ -56,7 +59,9 @@ export function practiceStats(entries, profileId) {
     warmup: own.filter((entry) => entry.warmup).length,
     mfr: own.filter((entry) => entry.mfr).length,
     workout: own.filter((entry) => entry.workout).length,
-    steps: own.filter((entry) => Number(entry.steps || 0) >= 7000).length
+    steps: own.filter((entry) => Number(entry.steps || 0) >= STEPS_GOAL).length,
+    water: own.filter((entry) => entry.water).length,
+    sleep: own.filter((entry) => sleepGoalMet(entry.sleepHours)).length
   };
 }
 

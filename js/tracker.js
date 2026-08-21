@@ -1,5 +1,6 @@
 import { compareDates, formatDate, formatMonth, monthGrid, startOfWeek, endOfWeek, todayMoscow } from "./dates.js";
 import { dailyScore } from "./scoring.js";
+import { MAX_DAILY_SCORE, normalizeSleepHours, sanitizeSleepInput, SLEEP_GOAL_HOURS, STEPS_GOAL } from "./daily-entry-values.js";
 import { buildRanking } from "./leaderboard.js";
 import { renderDailyResults } from "./members.js";
 import { activityMark, avatar, el, participantDisplayName, plural, sectionHeading } from "./ui.js";
@@ -9,12 +10,15 @@ const ACTIVITY_CONFIG = [
   { key: "mfr", number: "02", title: "МФР", subtitle: "работа с роллом" },
   { key: "workout", number: "03", title: "Тренировка", subtitle: "основная практика" }
 ];
+const WATER_CONFIG = { key: "water", number: "05", title: "Вода 1,5 л", subtitle: "дневная норма воды" };
 
 function scorePhrase(score) {
   return [
     "Можно начать с одного небольшого действия.",
     "Первый шаг уже есть.",
     "Хороший ритм — продолжайте прислушиваться к себе.",
+    "Половина дневных отметок уже собрана.",
+    "Хороший день заботы о теле.",
     "Почти полный круг заботы о теле.",
     "Полный день заботы о теле"
   ][score];
@@ -45,7 +49,7 @@ export function createCalendar({ month, entries, profile, selectedDate, today, o
     if (isIneligible) classNames.push("ineligible");
     if (dateString === selectedDate) classNames.push("selected");
     if (dateString === today) classNames.push("today");
-    const dayState = hasProgress ? `${score} из 4 баллов` : missed ? "пропущено" : isLoading ? "загружается" : "недоступно";
+    const dayState = hasProgress ? `${score} из ${MAX_DAILY_SCORE} баллов` : missed ? "пропущено" : isLoading ? "загружается" : "недоступно";
     const cell = el("button", {
       className: classNames.join(" "),
       type: "button",
@@ -78,11 +82,13 @@ function createTracker(state, profile, selectedDate, actions, sync = { ready: tr
     warmup: Boolean(existing?.warmup),
     mfr: Boolean(existing?.mfr),
     workout: Boolean(existing?.workout),
-    steps: existing ? String(existing.steps ?? "") : ""
+    steps: existing ? String(existing.steps ?? "") : "",
+    water: Boolean(existing?.water),
+    sleepHours: existing?.sleepHours === null || existing?.sleepHours === undefined ? "" : String(existing.sleepHours).replace(".", ",")
   };
   const scoreValue = el("b", { text: dailyScore(draft) });
   const phrase = el("p", { className: "score-copy", text: scorePhrase(dailyScore(draft)) });
-  const scoreLabel = el("span", { className: "daily-score" }, [scoreValue, "/4 балла"]);
+  const scoreLabel = el("span", { className: "daily-score" }, [scoreValue, `/${MAX_DAILY_SCORE} баллов`]);
   const section = el("section", { className: "editorial-section tracker-section", attrs: { "aria-busy": String(sync.loading || saving) } }, [
     el("div", { className: "tracker-head" }, [el("h2", { text: "Трекер дня" }), scoreLabel]),
     phrase
@@ -92,9 +98,9 @@ function createTracker(state, profile, selectedDate, actions, sync = { ready: tr
     const score = dailyScore(draft);
     scoreValue.textContent = score;
     phrase.textContent = scorePhrase(score);
-    section.classList.toggle("perfect-day", score === 4);
+    section.classList.toggle("perfect-day", score === MAX_DAILY_SCORE);
   };
-  ACTIVITY_CONFIG.forEach((config) => {
+  const appendToggleCard = (config) => {
     const stateText = el("span", { className: "activity-state", text: draft[config.key] ? "готово ✓" : "отметить" });
     const card = el("button", {
       className: "activity-card",
@@ -114,7 +120,8 @@ function createTracker(state, profile, selectedDate, actions, sync = { ready: tr
       stateText
     ]);
     list.append(card);
-  });
+  };
+  ACTIVITY_CONFIG.forEach(appendToggleCard);
   const stepProgress = el("span");
   const progressTrack = el("span", { className: "step-progress", attrs: { "aria-hidden": "true" } }, [stepProgress]);
   const stepsInput = el("input", {
@@ -124,12 +131,12 @@ function createTracker(state, profile, selectedDate, actions, sync = { ready: tr
     attrs: { min: "0", max: "200000", step: "1", inputmode: "numeric", "aria-label": "Количество шагов" },
     on: { input: (event) => {
       draft.steps = event.currentTarget.value;
-      const value = Math.max(0, Math.min(7000, Number(draft.steps || 0)));
-      stepProgress.style.width = `${(value / 7000) * 100}%`;
+      const value = Math.max(0, Math.min(STEPS_GOAL, Number(draft.steps || 0)));
+      stepProgress.style.width = `${(value / STEPS_GOAL) * 100}%`;
       updateVisuals();
     } }
   });
-  stepProgress.style.width = `${(Math.max(0, Math.min(7000, Number(draft.steps || 0))) / 7000) * 100}%`;
+  stepProgress.style.width = `${(Math.max(0, Math.min(STEPS_GOAL, Number(draft.steps || 0))) / STEPS_GOAL) * 100}%`;
   const stepsCard = el("div", { className: "activity-card steps-card" }, [
     el("span", { className: "activity-number", text: "04" }),
     activityMark("steps", "activity-icon"),
@@ -137,12 +144,54 @@ function createTracker(state, profile, selectedDate, actions, sync = { ready: tr
     stepsInput
   ]);
   list.append(stepsCard);
+  appendToggleCard(WATER_CONFIG);
+  const sleepInput = el("input", {
+    type: "text",
+    value: draft.sleepHours,
+    disabled: !canEdit,
+    attrs: {
+      min: "0",
+      max: "24",
+      step: "0.5",
+      inputmode: "decimal",
+      autocomplete: "off",
+      placeholder: "0–24",
+      "aria-label": "Количество часов сна"
+    },
+    on: { input: (event) => {
+      const input = event.currentTarget;
+      const sanitized = sanitizeSleepInput(input.value, draft.sleepHours);
+      draft.sleepHours = sanitized;
+      input.value = sanitized;
+      input.setCustomValidity("");
+      updateVisuals();
+    } }
+  });
+  const sleepCard = el("div", { className: "activity-card sleep-card" }, [
+    el("span", { className: "activity-number", text: "06" }),
+    activityMark("sleep", "activity-icon"),
+    el("label", { className: "activity-copy" }, [
+      el("strong", { text: "Сон" }),
+      el("small", { text: `цель ${String(SLEEP_GOAL_HOURS).replace(".", ",")}+ часов` })
+    ]),
+    sleepInput
+  ]);
+  list.append(sleepCard);
   const saveButton = el("button", {
     className: "button button-primary",
     type: "button",
     text: saving ? "Сохраняем…" : existing ? "Обновить день" : "Зафиксировать день",
     disabled: !canEdit,
-    on: { click: () => actions.save(selectedDate, draft, dailyScore(draft)) }
+    on: { click: () => {
+      try {
+        const sleepHours = normalizeSleepHours(draft.sleepHours);
+        sleepInput.setCustomValidity("");
+        actions.save(selectedDate, { ...draft, sleepHours }, dailyScore({ ...draft, sleepHours }));
+      } catch (error) {
+        sleepInput.setCustomValidity(error.message);
+        sleepInput.reportValidity();
+      }
+    } }
   });
   if (sync.loading) {
     section.append(el("p", { className: "tracker-sync-message", text: "Загружаем отметку из Supabase…", attrs: { role: "status" } }));

@@ -102,6 +102,24 @@ export function activityMark(kind, className, label = "") {
       svgElement("circle", { cx: "16", cy: "2.9", r: "1.05", fill: "currentColor" }),
       svgElement("circle", { cx: "18.2", cy: "3.2", r: ".95", fill: "currentColor" })
     );
+  } else if (kind === "water") {
+    svg.append(svgElement("path", {
+      d: "M12 2.8S6.4 9.2 6.4 14a5.6 5.6 0 0 0 11.2 0C17.6 9.2 12 2.8 12 2.8Zm-2.7 11.5c.2 1.6 1.2 2.6 2.7 2.9",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "1.8",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round"
+    }));
+  } else if (kind === "sleep") {
+    svg.append(svgElement("path", {
+      d: "M18.8 15.3A8.2 8.2 0 0 1 8.7 5.2 8.2 8.2 0 1 0 18.8 15.3Z",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "1.8",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round"
+    }));
   }
   mark.append(svg);
   return mark;

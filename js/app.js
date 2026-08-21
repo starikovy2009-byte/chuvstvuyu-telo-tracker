@@ -16,6 +16,7 @@ import {
 import { loadClubData } from "./club-data.js";
 import { loadCoachClubData } from "./coach-data.js";
 import { loadDailyEntriesForMonth, saveDailyEntry } from "./daily-entries.js";
+import { MAX_DAILY_SCORE } from "./daily-entry-values.js";
 import { renderRating } from "./leaderboard.js";
 import {
   approvePendingMembership,
@@ -38,6 +39,7 @@ import {
 } from "./store.js";
 import { renderOverview } from "./tracker.js";
 import { clampDate, compareDates, todayMoscow } from "./dates.js";
+import { dailyScore } from "./scoring.js";
 import { el } from "./ui.js";
 
 const refs = {
@@ -349,7 +351,7 @@ function memberActions(profile) {
       render();
       refreshMemberEntries(selectedDate.slice(0, 7), { force: true });
     },
-    async save(dateString, draft, score) {
+    async save(dateString, draft) {
       const month = dateString.slice(0, 7);
       if (!hasActiveParticipantAccount(profile.id)) {
         notify("Сохранять отметки может только действующий участник клуба.");
@@ -379,9 +381,9 @@ function memberActions(profile) {
             .filter((entry) => !(entry.profileId === profile.id && entry.localDate === dateString));
           clubDataState.state.dailyEntries.push(savedEntry);
         }
-        if (score === 4 && !uiState.perfectPlayed.has(`${profile.id}:${dateString}`)) {
+        if (dailyScore(savedEntry) === MAX_DAILY_SCORE && !uiState.perfectPlayed.has(`${profile.id}:${dateString}`)) {
           uiState.perfectPlayed.add(`${profile.id}:${dateString}`);
-          notify("Полный день заботы о теле · 4/4");
+          notify(`Полный день заботы о теле · ${MAX_DAILY_SCORE}/${MAX_DAILY_SCORE}`);
         } else notify("Готово, день сохранён в клубном дневнике");
       } catch (error) {
         memberEntriesState.errorMonth = month;

@@ -1,11 +1,12 @@
 import { dailyScore } from "./scoring.js";
+import { MAX_DAILY_SCORE, sleepGoalMet, STEPS_GOAL } from "./daily-entry-values.js";
 import { activityMark, avatar, el, participantDisplayName } from "./ui.js";
 
 export function renderDailyResults(state, dateString, activeProfileId) {
   const wrap = el("div", { className: "daily-results" });
   const profiles = state.profiles.filter((profile) => profile.status === "active");
-  const activityLabels = ["Зарядка", "МФР", "Тренировка", "7000 шагов"];
-  const activityKeys = ["warmup", "mfr", "workout", "steps"];
+  const activityLabels = ["Зарядка", "МФР", "Тренировка", "7000 шагов", "Вода 1,5 л", "Сон 7+ часов"];
+  const activityKeys = ["warmup", "mfr", "workout", "steps", "water", "sleep"];
   wrap.append(el("div", { className: "daily-result-head", attrs: { "aria-label": "Обозначения активностей" } }, [
     el("span", { attrs: { "aria-hidden": "true" } }),
     el("span", { attrs: { "aria-hidden": "true" } }),
@@ -23,7 +24,9 @@ export function renderDailyResults(state, dateString, activeProfileId) {
       Boolean(entry?.warmup),
       Boolean(entry?.mfr),
       Boolean(entry?.workout),
-      Number(entry?.steps || 0) >= 7000
+      Number(entry?.steps || 0) >= STEPS_GOAL,
+      Boolean(entry?.water),
+      sleepGoalMet(entry?.sleepHours)
     ];
     const row = el("div", { className: `daily-result-row${profile.id === activeProfileId ? " you" : ""}` }, [
       avatar(profile, profile.id === activeProfileId ? "you" : ""),
@@ -33,7 +36,7 @@ export function renderDailyResults(state, dateString, activeProfileId) {
         text: done ? "✓" : "–",
         attrs: { "aria-label": `${activityLabels[index]}: ${done ? "выполнено" : "не отмечено"}` }
       })),
-      el("b", { text: `${score}/4` })
+      el("b", { text: `${score}/${MAX_DAILY_SCORE}` })
     ]);
     wrap.append(row);
   });
